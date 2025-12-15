@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\CartController;
+use App\Http\Controllers\Api\ProductViewController;
+use App\Http\Controllers\Api\MegaMenuController;
 
 
 // Route::get('/', function () {
@@ -20,12 +22,17 @@ use App\Http\Controllers\Admin\CartController;
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{slug}', [CategoryController::class, 'show']);
+Route::get('/mega-menu', [MegaMenuController::class, 'index']);
 
 
 /* ------------------------Products APIs-------------------------*/
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
 Route::post('/products', [ProductController::class, 'store']);
+
+// Flat/view-backed product APIs (query vw_product_full_view)
+Route::get('/products/view', [ProductViewController::class, 'index']);
+Route::get('/products/view/{id}', [ProductViewController::class, 'show']);
 
 
 /* ------------------------Attribute APIs-------------------------*/
