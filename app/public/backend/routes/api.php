@@ -26,13 +26,14 @@ Route::get('/mega-menu', [MegaMenuController::class, 'index']);
 
 
 /* ------------------------Products APIs-------------------------*/
+// Flat/view-backed product APIs (query vw_product_full_view) - MUST come first (more specific routes)
+Route::get('/products/view', [ProductViewController::class, 'index']);
+Route::get('/products/view/{id}', [ProductViewController::class, 'show']);
+
+// Admin product APIs
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
 Route::post('/products', [ProductController::class, 'store']);
-
-// Flat/view-backed product APIs (query vw_product_full_view)
-Route::get('/products/view', [ProductViewController::class, 'index']);
-Route::get('/products/view/{id}', [ProductViewController::class, 'show']);
 
 
 /* ------------------------Attribute APIs-------------------------*/
