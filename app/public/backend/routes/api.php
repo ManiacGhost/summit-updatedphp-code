@@ -8,11 +8,19 @@ use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\CartController;
 use App\Http\Controllers\Api\ProductViewController;
 use App\Http\Controllers\Api\MegaMenuController;
+use App\Http\Controllers\Api\AuthController;
 
 
 // Route::get('/', function () {
 //     return "hii API";
 // });
+
+
+/* -------------------------Authentication APIs------------------------*/
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
+Route::get('/me', [AuthController::class, 'me'])->middleware('auth');
 
 
 /* ------------------------Products APIs-------------------------*/
