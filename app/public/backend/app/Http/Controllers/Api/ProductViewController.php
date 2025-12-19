@@ -5,9 +5,63 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
+use App\Services\S3PresignedUrlService;
 
 class ProductViewController extends Controller
 {
+    /**
+     * Convert S3 image URL to presigned URL
+     */
+    private function convertImageToPresignedUrl($product)
+    {
+        if (is_object($product)) {
+            if (isset($product->image) && $product->image) {
+                $product->image = $this->getPresignedUrl($product->image);
+            }
+        } elseif (is_array($product)) {
+            if (isset($product['image']) && $product['image']) {
+                $product['image'] = $this->getPresignedUrl($product['image']);
+            }
+        }
+        return $product;
+    }
+
+    /**
+     * Convert images in a collection of products
+     */
+    private function convertImagesToPresignedUrls($products)
+    {
+        if ($products instanceof \Illuminate\Pagination\Paginator || 
+            $products instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+            return $products->through(fn($product) => $this->convertImageToPresignedUrl($product));
+        }
+
+        if (is_array($products)) {
+            return array_map(fn($product) => $this->convertImageToPresignedUrl($product), $products);
+        }
+
+        return $products;
+    }
+
+    /**
+     * Generate presigned URL from S3 image URL
+     */
+    private function getPresignedUrl($imageUrl)
+    {
+        if (!$imageUrl || strpos($imageUrl, 'X-Amz-Signature') !== false) {
+            return $imageUrl; // Return if empty or already presigned
+        }
+
+        try {
+            $svc = new S3PresignedUrlService();
+            return $svc->convertToPresignedUrl($imageUrl, 60);
+        } catch (\Exception $e) {
+            \Log::error('Presigned URL service error: ' . $e->getMessage());
+            return $imageUrl;
+        }
+    }
     /**
      * Return products from the vw_product_full_view with dynamic filters.
      * Supports: search, filter by columns, min_mrp, max_mrp, sort, order, pagination
@@ -88,6 +142,9 @@ class ProductViewController extends Controller
         $perPage = min((int)$request->get('per_page', 12), 200);
         $results = $qb->paginate($perPage);
 
+        // Convert images to presigned URLs
+        $results = $this->convertImagesToPresignedUrls($results);
+
         return response()->json($results);
     }
 
@@ -104,6 +161,9 @@ class ProductViewController extends Controller
         if (! $row) {
             return response()->json(['message' => 'Not found'], 404);
         }
+
+        // Convert image to presigned URL
+        $row = $this->convertImageToPresignedUrl($row);
 
         return response()->json($row);
     }
