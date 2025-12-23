@@ -13,11 +13,15 @@ class Cart extends Model
 
     public function items()
     {
-        return $this->hasMany(CartItem::class)->with('variant');
+        return $this->hasMany(CartItem::class);
     }
 
     public function total()
     {
-        return $this->items->sum(fn ($item) => $item->price * $item->quantity);
+        $total = 0;
+        foreach ($this->items as $item) {
+            $total += ($item->price * $item->quantity);
+        }
+        return $total;
     }
 }
