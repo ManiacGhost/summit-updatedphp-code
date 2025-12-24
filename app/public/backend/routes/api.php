@@ -19,8 +19,9 @@ use App\Http\Controllers\Api\AuthController;
 /* -------------------------Authentication APIs------------------------*/
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
-Route::get('/me', [AuthController::class, 'me'])->middleware('auth');
+Route::post('/refresh', [AuthController::class, 'refresh']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('jwt');
+Route::get('/me', [AuthController::class, 'me'])->middleware('jwt');
 
 
 /* ------------------------Products APIs-------------------------*/
@@ -59,10 +60,12 @@ Route::post('/variants', [ProductVariantController::class, 'store']);
 
 /*  --------------------------Cart Route------------------------------ */
 
-Route::get('/cart', [CartController::class, 'index']);
-Route::post('/cart/add', [CartController::class, 'add']);
-Route::get('/cart/remove/{item}', [CartController::class, 'remove']);
-Route::post('/cart/update/{item}', [CartController::class, 'updateQuantity']);
-Route::post('/cart/clear', [CartController::class, 'clear']);
+Route::middleware('jwt')->group(function () {
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart/add', [CartController::class, 'add']);
+    Route::get('/cart/remove/{item}', [CartController::class, 'remove']);
+    Route::post('/cart/update/{item}', [CartController::class, 'updateQuantity']);
+    Route::post('/cart/clear', [CartController::class, 'clear']);
+});
 
 

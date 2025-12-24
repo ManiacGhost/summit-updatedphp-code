@@ -17,22 +17,23 @@ class CartController extends Controller
     }
 
     /**
-     * Get cart by user_id
-     * GET /api/cart?user_id=1
+     * Get cart for authenticated user
+     * GET /api/cart
+     * Header: Authorization: Bearer {token}
      */
     public function index(Request $request)
     {
         try {
-            $userId = $request->query('user_id') ?? $request->input('user_id');
-            
-            if (!$userId) {
+            $user = auth()->user();
+
+            if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'user_id is required'
-                ], 400);
+                    'message' => 'Unauthorized'
+                ], 401);
             }
 
-            $response = $this->cartService->getCart($userId);
+            $response = $this->cartService->getCart($user->id);
             return response()->json($response);
         } catch (\Exception $e) {
             return response()->json([
@@ -43,21 +44,31 @@ class CartController extends Controller
     }
 
     /**
-     * Add item to cart
+     * Add item to authenticated user's cart
      * POST /api/cart/add
+     * Header: Authorization: Bearer {token}
+     * Body: { "product_id": "S1IF", "quantity": 1, "price": 1160.00 }
      */
     public function add(Request $request)
     {
         try {
+            $user = auth()->user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 401);
+            }
+
             $validated = $request->validate([
-                'user_id' => 'required|integer',
                 'product_id' => 'required|string',
                 'quantity' => 'required|integer|min:1|max:99',
                 'price' => 'required|numeric|min:0',
             ]);
 
             $response = $this->cartService->addItem(
-                $validated['user_id'],
+                $user->id,
                 $validated['product_id'],
                 $validated['quantity'],
                 $validated['price']
@@ -79,19 +90,29 @@ class CartController extends Controller
     }
 
     /**
-     * Update item quantity
+     * Update item quantity in authenticated user's cart
      * POST /api/cart/update/{itemId}
+     * Header: Authorization: Bearer {token}
+     * Body: { "quantity": 5 }
      */
     public function updateQuantity(Request $request, $itemId)
     {
         try {
+            $user = auth()->user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 401);
+            }
+
             $validated = $request->validate([
-                'user_id' => 'required|integer',
                 'quantity' => 'required|integer|min:1|max:99',
             ]);
 
             $response = $this->cartService->updateQuantity(
-                $validated['user_id'],
+                $user->id,
                 $itemId,
                 $validated['quantity']
             );
@@ -112,22 +133,23 @@ class CartController extends Controller
     }
 
     /**
-     * Remove item from cart
-     * GET /api/cart/remove/{itemId}?user_id=1
+     * Remove item from authenticated user's cart
+     * GET /api/cart/remove/{itemId}
+     * Header: Authorization: Bearer {token}
      */
     public function remove(Request $request, $itemId)
     {
         try {
-            $userId = $request->query('user_id') ?? $request->input('user_id');
-            
-            if (!$userId) {
+            $user = auth()->user();
+
+            if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'user_id is required'
-                ], 400);
+                    'message' => 'Unauthorized'
+                ], 401);
             }
 
-            $response = $this->cartService->removeItem($userId, $itemId);
+            $response = $this->cartService->removeItem($user->id, $itemId);
             return response()->json($response);
         } catch (\Exception $e) {
             return response()->json([
@@ -138,22 +160,23 @@ class CartController extends Controller
     }
 
     /**
-     * Clear entire cart
+     * Clear entire cart for authenticated user
      * POST /api/cart/clear
+     * Header: Authorization: Bearer {token}
      */
     public function clear(Request $request)
     {
         try {
-            $userId = $request->input('user_id') ?? $request->query('user_id');
-            
-            if (!$userId) {
+            $user = auth()->user();
+
+            if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'user_id is required'
-                ], 400);
+                    'message' => 'Unauthorized'
+                ], 401);
             }
 
-            $response = $this->cartService->clearCart($userId);
+            $response = $this->cartService->clearCart($user->id);
             return response()->json($response);
         } catch (\Exception $e) {
             return response()->json([
