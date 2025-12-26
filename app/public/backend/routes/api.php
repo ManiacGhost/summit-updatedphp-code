@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\CartController;
 use App\Http\Controllers\Api\ProductViewController;
 use App\Http\Controllers\Api\MegaMenuController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\GlobalSearchController;
 
 
 // Route::get('/', function () {
@@ -32,6 +33,12 @@ Route::get('/me', [AuthController::class, 'me'])->middleware('jwt');
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{slug}', [CategoryController::class, 'show']);
 Route::get('/mega-menu', [MegaMenuController::class, 'index']);
+
+
+/* ------------------------Global Search APIs------------------------*/
+Route::get('/search', [GlobalSearchController::class, 'search']);
+Route::get('/search/suggestions', [GlobalSearchController::class, 'suggestions']);
+Route::get('/search/advanced', [GlobalSearchController::class, 'advancedSearch']);
 
 
 /* ------------------------Products APIs-------------------------*/
