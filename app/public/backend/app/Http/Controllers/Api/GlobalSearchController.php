@@ -19,8 +19,15 @@ class GlobalSearchController extends Controller
         }
 
         try {
+            // Remove s3://bucket-name/ prefix if it exists
+            $cleanPath = $imagePath;
+            if (strpos($imagePath, 's3://') === 0) {
+                // Extract just the path after s3://bucket-name/
+                $cleanPath = preg_replace('#^s3://[^/]+/#', '', $imagePath);
+            }
+
             return Storage::disk('s3')->temporaryUrl(
-                $imagePath,
+                $cleanPath,
                 now()->addHours(1)
             );
         } catch (\Exception $e) {
