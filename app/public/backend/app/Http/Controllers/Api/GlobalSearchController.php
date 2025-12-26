@@ -5,9 +5,30 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class GlobalSearchController extends Controller
 {
+    /**
+     * Generate presigned URL for S3 image
+     */
+    private function getPresignedImageUrl($imagePath)
+    {
+        if (!$imagePath) {
+            return null;
+        }
+
+        try {
+            return Storage::disk('s3')->temporaryUrl(
+                $imagePath,
+                now()->addHours(1)
+            );
+        } catch (\Exception $e) {
+            \Log::error('Error generating presigned URL: ' . $e->getMessage());
+            return null;
+        }
+    }
+
     /**
      * Global fuzzy search across products, variants, and product IDs
      */
@@ -54,6 +75,7 @@ class GlobalSearchController extends Controller
                     $productsData[$productId] = [
                         'id' => $row->product_id,
                         'name' => $row->product_name,
+                        'image' => $this->getPresignedImageUrl($row->image),
                         'category' => [
                             'name' => $row->master_category ?? 'N/A',
                             'subcategory' => $row->subcat_name ?? 'N/A'
@@ -66,6 +88,7 @@ class GlobalSearchController extends Controller
                 $productsData[$productId]['variants'][] = [
                     'detail_id' => $row->detail_id,
                     'sku' => $row->hsn_code,
+                    'image' => $this->getPresignedImageUrl($row->image),
                     'mrp' => $row->mrp ?? 0,
                     'tax_rate' => $row->tax_rate ?? 0,
                     'weight' => $row->weight ?? 0,
@@ -206,6 +229,7 @@ class GlobalSearchController extends Controller
                 'product_id',
                 'detail_id',
                 'product_name',
+                'image',
                 'hsn_code',
                 'mrp',
                 'tax_rate',
