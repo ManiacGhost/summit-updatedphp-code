@@ -66,7 +66,7 @@ curl --location 'http://127.0.0.1:8000/api/categories/pressure-cooker' \
 --header 'Accept: application/json'
 ```
 
-## Cart API
+## Cart API (SQL-Based)
 
 ### 11. Get Current Cart
 ```bash
@@ -81,7 +81,7 @@ curl --location 'http://127.0.0.1:8000/api/cart/add' \
 --header 'Content-Type: application/json' \
 --header 'Accept: application/json' \
 --data '{
-  "variant_id": 1,
+  "product_variant_id": 1,
   "quantity": 2
 }'
 ```
