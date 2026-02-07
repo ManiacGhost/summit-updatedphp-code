@@ -42,6 +42,7 @@ Route::get('/me', [AuthController::class, 'me'])->middleware('jwt');
 Route::prefix('/admin/categories')->group(function () {
     Route::get('/', [ProductCategoryController::class, 'index']);
     Route::post('/', [ProductCategoryController::class, 'store']);
+    Route::get('/next-id', [ProductCategoryController::class, 'getNextCategoryId']);
     Route::get('/{categoryId}', [ProductCategoryController::class, 'show']);
     Route::post('/{categoryId}', [ProductCategoryController::class, 'update']);
     Route::delete('/{categoryId}', [ProductCategoryController::class, 'destroy']);

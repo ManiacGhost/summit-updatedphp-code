@@ -10,6 +10,28 @@ use Illuminate\Validation\Rule;
 class ProductCategoryController extends Controller
 {
     /**
+     * Generate next available category ID
+     *
+     * @return string
+     */
+    private function generateNextCategoryId()
+    {
+        $lastCategory = ProductCategory::orderBy('category_id', 'desc')->first();
+        if (!$lastCategory) {
+            return 'CAT001';
+        }
+        
+        // Extract numeric part and increment
+        $lastId = $lastCategory->category_id;
+        if (preg_match('/(\d+)$/', $lastId, $matches)) {
+            $nextNumber = (int)$matches[1] + 1;
+            return 'CAT' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        }
+        
+        return 'CAT001';
+    }
+
+    /**
      * Display a listing of all product categories.
      *
      * @return \Illuminate\Http\JsonResponse
@@ -37,6 +59,30 @@ class ProductCategoryController extends Controller
     }
 
     /**
+     * Get next available category ID
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getNextCategoryId()
+    {
+        try {
+            $nextId = $this->generateNextCategoryId();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Next category ID generated successfully',
+                'data' => ['next_category_id' => $nextId]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error generating next category ID',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Store a newly created product category in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -45,6 +91,13 @@ class ProductCategoryController extends Controller
     public function store(Request $request)
     {
         try {
+            // Auto-generate category_id if not provided
+            $requestData = $request->all();
+            if (empty($requestData['category_id'])) {
+                $requestData['category_id'] = $this->generateNextCategoryId();
+                $request->merge(['category_id' => $requestData['category_id']]);
+            }
+
             $validated = $request->validate([
                 'category_id' => 'required|string|max:20|unique:sm_product_categories,category_id',
                 'category_name' => 'required|string|max:100',
@@ -62,7 +115,8 @@ class ProductCategoryController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
+                'request_data' => $request->all() // Debug: include request data
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
