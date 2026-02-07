@@ -20,11 +20,13 @@ class ProductMain extends Model
         'category_id',
         'product_name',
         'hsn_code',
-        'tax_rate'
+        'tax_rate',
+        'trending_flag'
     ];
 
     protected $casts = [
-        'tax_rate' => 'decimal:2'
+        'tax_rate' => 'decimal:2',
+        'trending_flag' => 'boolean'
     ];
 
     /**

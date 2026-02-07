@@ -100,8 +100,10 @@ Route::prefix('/admin/products-main')->group(function () {
     Route::get('/', [ProductMainController::class, 'index']);
     Route::post('/', [ProductMainController::class, 'store']);
     Route::get('/search', [ProductMainController::class, 'search']);
+    Route::get('/trending', [ProductMainController::class, 'getTrending']);
     Route::get('/{productId}', [ProductMainController::class, 'show']);
     Route::post('/{productId}', [ProductMainController::class, 'update']);
+    Route::post('/{productId}/toggle-trending', [ProductMainController::class, 'toggleTrending']);
     Route::delete('/{productId}', [ProductMainController::class, 'destroy']);
     Route::get('/category/{categoryId}', [ProductMainController::class, 'getByCategory']);
 });

@@ -48,7 +48,8 @@ class ProductMainController extends Controller
                 'category_id' => 'nullable|string|max:20|exists:sm_product_categories,category_id',
                 'product_name' => 'nullable|string|max:255',
                 'hsn_code' => 'nullable|string|max:20',
-                'tax_rate' => 'nullable|numeric|min:0|max:999.99'
+                'tax_rate' => 'nullable|numeric|min:0|max:999.99',
+                'trending_flag' => 'nullable|boolean'
             ]);
 
             $product = ProductMain::create($validated);
@@ -120,7 +121,8 @@ class ProductMainController extends Controller
                 'category_id' => 'nullable|string|max:20|exists:sm_product_categories,category_id',
                 'product_name' => 'nullable|string|max:255',
                 'hsn_code' => 'nullable|string|max:20',
-                'tax_rate' => 'nullable|numeric|min:0|max:999.99'
+                'tax_rate' => 'nullable|numeric|min:0|max:999.99',
+                'trending_flag' => 'nullable|boolean'
             ]);
 
             $product->update($validated);
@@ -252,6 +254,66 @@ class ProductMainController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error searching products',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all trending products.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getTrending()
+    {
+        try {
+            $products = ProductMain::with('category')
+                ->where('trending_flag', 1)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Trending products retrieved successfully',
+                'data' => $products,
+                'count' => $products->count()
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving trending products',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Toggle trending flag for a product.
+     *
+     * @param  string  $productId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function toggleTrending($productId)
+    {
+        try {
+            $product = ProductMain::where('product_id', $productId)->firstOrFail();
+            $product->trending_flag = !$product->trending_flag;
+            $product->save();
+            $product = $product->load('category');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Trending flag toggled successfully',
+                'data' => $product
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error toggling trending flag',
                 'error' => $e->getMessage()
             ], 500);
         }
