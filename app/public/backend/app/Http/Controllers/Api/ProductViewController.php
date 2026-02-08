@@ -40,6 +40,10 @@ class ProductViewController extends Controller
             return $products->through(fn($product) => $this->convertImageToPresignedUrl($product));
         }
 
+        if ($products instanceof \Illuminate\Support\Collection) {
+            return $products->map(fn($product) => $this->convertImageToPresignedUrl($product));
+        }
+
         if (is_array($products)) {
             return array_map(fn($product) => $this->convertImageToPresignedUrl($product), $products);
         }
@@ -233,9 +237,8 @@ class ProductViewController extends Controller
             }
         }
 
-        // Pagination
-        $perPage = min((int)$request->get('per_page', 12), 200);
-        $results = $qb->paginate($perPage);
+        // No pagination for trending endpoint - get all results
+        $results = $qb->get();
 
         // Convert images to presigned URLs
         $results = $this->convertImagesToPresignedUrls($results);

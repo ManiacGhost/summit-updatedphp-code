@@ -31,6 +31,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/refresh', [AuthController::class, 'refresh']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('jwt');
 Route::get('/me', [AuthController::class, 'me'])->middleware('jwt');
+Route::get('/users/count', [AuthController::class, 'getUserCount']);
+Route::get('/users/earliest', [AuthController::class, 'getEarliestUsers']);
 
 
 /* ------------------------Products APIs-------------------------*/

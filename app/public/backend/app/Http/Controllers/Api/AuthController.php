@@ -212,4 +212,63 @@ class AuthController extends Controller
             ]
         ], 200);
     }
+
+    /**
+     * Get total count of registered users
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUserCount()
+    {
+        try {
+            $count = User::count();
+
+            return response()->json([
+                'success' => true,
+                'total_users' => $count
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving user count',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get earliest 10 registered users
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEarliestUsers()
+    {
+        try {
+            $users = User::orderBy('created_at', 'asc')
+                ->limit(10)
+                ->get()
+                ->map(function ($user) {
+                    return [
+                        'id' => $user->user_id_custom,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'created_at' => $user->created_at,
+                        'updated_at' => $user->updated_at,
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Earliest users retrieved successfully',
+                'data' => $users,
+                'count' => $users->count()
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving users',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
