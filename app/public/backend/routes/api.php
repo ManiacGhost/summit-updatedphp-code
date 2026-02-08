@@ -136,6 +136,7 @@ Route::get('/search/advanced', [GlobalSearchController::class, 'advancedSearch']
 /* ------------------------Products APIs-------------------------*/
 // Flat/view-backed product APIs (query vw_product_full_view) - MUST come first (more specific routes)
 Route::get('/products/view', [ProductViewController::class, 'index']);
+Route::get('/products/view/trending', [ProductViewController::class, 'trending']);
 Route::get('/products/view/{id}', [ProductViewController::class, 'show']);
 
 // Admin product APIs
