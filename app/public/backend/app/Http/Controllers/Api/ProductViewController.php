@@ -157,7 +157,13 @@ class ProductViewController extends Controller
     public function trending(Request $request)
     {
         $qb = DB::table('vw_product_full_view')
-            ->where('trending_flag', 1);
+            ->where('trending_flag', 1)
+            ->whereIn('detail_id', function ($sub) {
+                $sub->from('vw_product_full_view')
+                    ->select(DB::raw('MIN(detail_id)'))
+                    ->where('trending_flag', 1)
+                    ->groupBy('product_id');
+            });
 
         // Search across common text fields
         if ($request->filled('search')) {
